@@ -2,10 +2,17 @@ import mongoose from "mongoose";
 import UserModel from "./user-model";
 import PostModel from "./post-model";
 import { add } from "lodash";
+import { seedDatabase } from "./seeder";
 
 mongoose.connect("mongodb://localhost:27017/mongooseLearning").then((v) => {
   console.log("Connected");
 });
+
+// seedDatabase();
+PostModel.aggregate([
+  { $project: { title: true, totalComments: { $size: "$comments" } } , },
+  {$sort: {totalComments: -1}}
+]).then((e) => console.log(e));
 
 // async function foo() {
 //   let users = await UserModel.find();

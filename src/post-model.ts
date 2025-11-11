@@ -64,7 +64,7 @@ postSchema.methods.addComment = function (
   this.comments.push({
     content: content,
     author: user,
-    createdAt: null,
+    createdAt: new Date(),
   });
 };
 
