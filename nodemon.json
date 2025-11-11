@@ -1,0 +1,4 @@
+{
+    "ext" : "ts , js , json , env",
+    "exec" : "npx tsx src/index.ts"
+}
