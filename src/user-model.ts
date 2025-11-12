@@ -1,4 +1,3 @@
-import { extend } from "lodash";
 import mongoose, { Model, Query } from "mongoose";
 
 export interface User {
@@ -29,29 +28,31 @@ let userSchema = new mongoose.Schema<
   IUserStaticsInterface,
   IUserInstaceMethods,
   IUserQueryHelpers
->({
-  name: {
-    type: String,
-    required: true,
+>(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+    },
   },
-  age: {
-    type: Number,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-},
-{
-  toJSON: {virtuals: true,},
-  toObject: {virtuals: true}
-});
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
 userSchema.methods.isAdult = function () {
   return this.age > 18;
