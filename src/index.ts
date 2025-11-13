@@ -1,9 +1,5 @@
 import mongoose from "./db";
-import UserModel from "./user-model";
-import ProductModel from "./aggregation/product-model";
 import BookingModel from "./aggregation/booking-model";
-import PostModel from "./post-model";
-
 
 mongoose.connect("mongodb://localhost:27017/mongooseLearning").then((v) => {
   console.log("Connected");
@@ -26,12 +22,12 @@ mongoose.connect("mongodb://localhost:27017/mongooseLearning").then((v) => {
 
 // foo();
 
-async function get() {
-  let post = await UserModel.find();
-  console.log(post);
-}
+// async function get() {
+//   let post = await UserModel.find();
+//   console.log(post);
+// }
 
-get();
+// get();
 
 // async function addComment() {
 //   let post = await PostModel.findOne();
@@ -77,71 +73,70 @@ get();
 
 // start();
 
-// async function aggregate() {
-//   // let res = await UserModel.aggregate([
-//   //   {
-//   //     $match : {
-//   //       age: {
-//   //         $gte: 18,
-//   //       },
-//   //     },
-//   //   },
-//   // ]);
+async function aggregate() {
+  let res = await BookingModel.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "userdata",
+      },
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "products",
+        foreignField: "_id",
+        as: "productdata",
+      },
+    },
+    {
+      $unwind: "$userdata",
+    },
+    {
+      $unwind: "$productdata",
+    },
+    {
+      $group: {
+        _id: { userId: "$userdata._id", productId: "$productdata._id" },
+        user: { $first: "$userdata" },
+        product: {
+          $first: "$productdata",
+        },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $group: {
+        _id: { userId: "$user._id" },
+        user: { $first: "$user" },
+        product: {
+          $push: {
+            product: "$product",
+            count: "$count",
+          },
+        },
+        total: {
+          $sum: {
+            $multiply: ["$product.price", "$count"],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        user: 1,
+        product: 1,
+        total: 1,
+      },
+    },
+  ]);
 
-//   let res = await BookingModel.aggregate([
-//     {
-//       $lookup: {
-//         from: "users",
-//         localField: "user",
-//         foreignField: "_id",
-//         as: "userdata",
-//       },
-//     },
-//     {
-//       $lookup: {
-//         from: "products",
-//         localField: "products",
-//         foreignField: "_id",
-//         as: "productdata",
-//       },
-//     },
-//     {
-//       $unwind: "$userdata",
-//     },
-//     {
-//       $unwind: "$productdata",
-//     },
-//     {
-//       $group: {
-//         _id: { userId: "$userdata._id", productId: "$productdata._id" },
-//         user: { $first: "$userdata" },
-//         product: {
-//           $first: "$productdata",
-//         },
-//         count: { $sum: 1 },
-//       },
-//     },
-//     {
-//       $group: {
-//         _id: { userId: "$user._id" },
-//         user: { $first: "$user" },
-//         product: {
-//           $push: "$product",
-//         },
-//         count: { $sum: "$count" },
-//         total: { $sum: "$product.price" },
-//       },
-//     },
-//     {
-//       $project: {
-//         _id: 0,
-//         user: 1,
-//         product: 1,
-//         count: 1,
-//         total: 1,
-//       },
-//     },
-//   ]);
+  console.log(JSON.stringify(res, null, 4));
+}
 
-//   console.log(JSON.stringify(res, null, 4));
-// }
+aggregate();
+
+// aggregate how many each user paid for every product in the market
